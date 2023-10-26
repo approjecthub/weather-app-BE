@@ -1,7 +1,8 @@
 package main
 
 import (
-	"net/http"
+	"fmt"
+	"os"
 
 	"weather-app-BE/config"
 	"weather-app-BE/controller"
@@ -10,12 +11,21 @@ import (
 	"weather-app-BE/router"
 	"weather-app-BE/service"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/joho/godotenv"
 	"github.com/rs/zerolog/log"
 )
 
+func CORSMiddleware() gin.HandlerFunc {
+	config := cors.DefaultConfig()
+	config.AllowOrigins = []string{"*"}
+	config.AllowMethods = []string{"GET", "POST", "PUT", "DELETE", "OPTION"}
+	config.AllowHeaders = []string{"Content-Type", "Content-Length", "Accept-Encoding", "X-CSRF-Token", "Authorization", "accept", "origin", "Cache-Control", "X-Requested-With"}
+
+	return cors.New(config)
+}
 func main() {
 	log.Info().Msg("Server started...")
 	if err := godotenv.Load(".env"); err != nil {
@@ -40,20 +50,11 @@ func main() {
 	wshController := controller.NewWeatherSearchHistoryController(wshService)
 
 	ginRouter := gin.Default()
+	ginRouter.Use(CORSMiddleware())
 	baseRouter := ginRouter.Group("/api")
-
 	router.NewUserRouter(baseRouter, userController)
 	router.NewWeatherRouter(baseRouter, weatherController)
 	router.NewWeatherSearchHistoryRouter(baseRouter, wshController)
 
-	server := &http.Server{
-		Addr:    "localhost:3333",
-		Handler: ginRouter,
-	}
-
-	err := server.ListenAndServe()
-
-	if err != nil {
-		panic(err)
-	}
+	ginRouter.Run(fmt.Sprintf(":%s", os.Getenv("PORT")))
 }
