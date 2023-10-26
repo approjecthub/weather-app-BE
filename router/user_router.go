@@ -11,9 +11,9 @@ func NewUserRouter(baseRouter *gin.RouterGroup, userController *controller.UserC
 	userRouter.POST("/register", userController.Create)
 	userRouter.POST("/login", userController.Login)
 
-	userRouter.GET("", userController.FindAll)
-	userRouter.GET("/:userId", userController.FindById)
-	userRouter.PUT("/:userId", userController.Update)
-	userRouter.DELETE("/:userId", userController.Delete)
+	// userRouter.GET("", userController.FindAll)
+	// userRouter.GET("/:userId", userController.FindById)
+	// userRouter.PUT("/:userId", userController.Update)
+	// userRouter.DELETE("/:userId", userController.Delete)
 
 }
