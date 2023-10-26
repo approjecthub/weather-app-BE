@@ -1,8 +1,10 @@
 package helper
 
 import (
+	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 	"weather-app-BE/data/response"
 
@@ -42,10 +44,10 @@ func ConverToValidDate(date string) (time.Time, error) {
 
 func GenerateJWTToken(userId uint) (string, error) {
 	secretKey := []byte(os.Getenv("SECRET_KEY"))
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["userId"] = userId
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix()
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userId": userId,
+		"exp":    time.Now().Add(time.Hour * 1).Unix(),
+	})
 	tokenString, err := token.SignedString(secretKey)
 	if err != nil {
 		log.Error().Msg(err.Error())
@@ -53,6 +55,35 @@ func GenerateJWTToken(userId uint) (string, error) {
 	}
 
 	return tokenString, nil
+}
+
+func JWTMiddleware(c *gin.Context) {
+	authHeader := c.GetHeader("Authorization")
+	tokenStr := ""
+	if len(strings.Split(authHeader, " ")) == 2 {
+		tokenStr = strings.Split(authHeader, " ")[1]
+	}
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+
+		return []byte(os.Getenv("SECRET_KEY")), nil
+	})
+	if err != nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		if claims["exp"].(float64) < float64(time.Now().Unix()) {
+			c.AbortWithStatus(http.StatusUnauthorized)
+		}
+		c.Set("userId", claims["userId"])
+		c.Next()
+	} else {
+		c.AbortWithStatus(http.StatusUnauthorized)
+	}
 }
 
 func SendErrorResponse(err error, ctx *gin.Context) {

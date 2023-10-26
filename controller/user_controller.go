@@ -54,8 +54,9 @@ func (controller *UserController) Login(ctx *gin.Context) {
 		return
 	}
 
-	domain := "localhost"
-	ctx.SetCookie("Authorization", fmt.Sprintf("bearer %s", token), 3600, "/", domain, false, true)
+	ctx.JSON(http.StatusOK, response.LoginResponse{
+		Token: fmt.Sprintf("Bearer %s", token),
+	})
 }
 
 func (controller *UserController) Update(ctx *gin.Context) {
