@@ -44,7 +44,8 @@ func (controller *WeatherController) GetWeather(ctx *gin.Context) {
 		return
 	}
 
-	weather, err := controller.WeatherService.GetWeather(latDecimal, lonDecimal)
+	userIdStr, _ := ctx.Get("userId")
+	weather, err := controller.WeatherService.GetWeather(latDecimal, lonDecimal, uint(userIdStr.(float64)))
 	if err != nil {
 		helper.SendErrorResponse(err, ctx.Copy())
 		return

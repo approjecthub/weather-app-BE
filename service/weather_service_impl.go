@@ -59,7 +59,7 @@ func (w *WeatherServiceImpl) SearchCities(cityPrefix string) ([]response.CityRes
 	return results, nil
 }
 
-func (w *WeatherServiceImpl) GetWeather(lat float64, lon float64) (response.WeatherSearchObject, error) {
+func (w *WeatherServiceImpl) GetWeather(lat float64, lon float64, userId uint) (response.WeatherSearchObject, error) {
 	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", lat, lon, os.Getenv("WEATHER_API_KEY"))
 
 	WeatherSearchObject, err := http.Get(url)
@@ -94,7 +94,7 @@ func (w *WeatherServiceImpl) GetWeather(lat float64, lon float64) (response.Weat
 	result.Lat = lat
 	result.Lon = lon
 	result.Place = weather["name"].(string)
-	result.UserID = 1 //this hard coded userid will be replaced later
+	result.UserID = userId //this hard coded userid will be replaced later
 	result.CreatedAt = time.Now()
 
 	dbOpError := w.wshService.Create(result)
