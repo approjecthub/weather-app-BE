@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"weather-app-BE/data/response"
+	"weather-app-BE/helper"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
@@ -31,7 +32,6 @@ func (w *WeatherServiceImpl) SearchCities(cityPrefix string) ([]response.CityRes
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
-
 	defer cityResponse.Body.Close()
 	if cityResponse.StatusCode != http.StatusOK {
 		return nil, errors.New("weather api failed")
@@ -51,7 +51,7 @@ func (w *WeatherServiceImpl) SearchCities(cityPrefix string) ([]response.CityRes
 			Lat:     item["lat"].(float64),
 			Lon:     item["lon"].(float64),
 			Country: item["country"].(string),
-			State:   item["state"].(string),
+			State:   helper.SafeStrConv(item["state"]),
 		}
 		results = append(results, result)
 	}

@@ -10,6 +10,7 @@ func NewUserRouter(baseRouter *gin.RouterGroup, userController *controller.UserC
 	userRouter := baseRouter.Group("/user")
 	userRouter.POST("/register", userController.Create)
 	userRouter.POST("/login", userController.Login)
+	userRouter.POST("/logout", userController.Logout)
 
 	// userRouter.GET("", userController.FindAll)
 	// userRouter.GET("/:userId", userController.FindById)

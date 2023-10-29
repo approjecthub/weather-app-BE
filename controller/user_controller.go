@@ -129,3 +129,8 @@ func (controller *UserController) FindAll(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, webRes)
 }
+
+func (controller *UserController) Logout(ctx *gin.Context) {
+	controller.userService.Logout(ctx.Copy())
+	ctx.JSON(http.StatusOK, response.Response{})
+}
