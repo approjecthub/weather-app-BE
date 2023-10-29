@@ -28,7 +28,8 @@ func (controller *WeatherSearchHistoryController) DeleteInBulk(ctx *gin.Context)
 		return
 	}
 
-	dbOpError := controller.wshService.DeleteInBulk(1, delWshReq.WshIds)
+	userIdStr, _ := ctx.Get("userId")
+	dbOpError := controller.wshService.DeleteInBulk(uint(userIdStr.(float64)), delWshReq.WshIds)
 	if dbOpError != nil {
 		helper.SendErrorResponse(dbOpError, ctx)
 		return
@@ -39,13 +40,15 @@ func (controller *WeatherSearchHistoryController) DeleteInBulk(ctx *gin.Context)
 
 func (controller *WeatherSearchHistoryController) Find(ctx *gin.Context) {
 	wshIdStr := ctx.Query("wshId")
+	userIdStr, _ := ctx.Get("userId")
 	if wshIdStr != "" {
 		wshId, cnvError := strconv.Atoi(wshIdStr)
 		if cnvError != nil {
 			helper.SendErrorResponse(cnvError, ctx)
 			return
 		}
-		wshRes, dbOpError := controller.wshService.FindById(1, uint(wshId))
+
+		wshRes, dbOpError := controller.wshService.FindById(uint(userIdStr.(float64)), uint(wshId))
 		if dbOpError != nil {
 			helper.SendErrorResponse(dbOpError, ctx)
 			return
@@ -53,7 +56,8 @@ func (controller *WeatherSearchHistoryController) Find(ctx *gin.Context) {
 		ctx.JSON(http.StatusOK, wshRes)
 
 	} else {
-		wshRes, dbOpError := controller.wshService.FindAll(1)
+
+		wshRes, dbOpError := controller.wshService.FindAll(uint(userIdStr.(float64)))
 		if dbOpError != nil {
 			helper.SendErrorResponse(dbOpError, ctx)
 			return

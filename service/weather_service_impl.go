@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 	"weather-app-BE/data/response"
+	"weather-app-BE/helper"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
@@ -31,7 +32,6 @@ func (w *WeatherServiceImpl) SearchCities(cityPrefix string) ([]response.CityRes
 		log.Error().Msg(err.Error())
 		return nil, err
 	}
-
 	defer cityResponse.Body.Close()
 	if cityResponse.StatusCode != http.StatusOK {
 		return nil, errors.New("weather api failed")
@@ -51,7 +51,7 @@ func (w *WeatherServiceImpl) SearchCities(cityPrefix string) ([]response.CityRes
 			Lat:     item["lat"].(float64),
 			Lon:     item["lon"].(float64),
 			Country: item["country"].(string),
-			State:   item["state"].(string),
+			State:   helper.SafeStrConv(item["state"]),
 		}
 		results = append(results, result)
 	}
@@ -59,7 +59,7 @@ func (w *WeatherServiceImpl) SearchCities(cityPrefix string) ([]response.CityRes
 	return results, nil
 }
 
-func (w *WeatherServiceImpl) GetWeather(lat float64, lon float64) (response.WeatherSearchObject, error) {
+func (w *WeatherServiceImpl) GetWeather(lat float64, lon float64, userId uint) (response.WeatherSearchObject, error) {
 	url := fmt.Sprintf("https://api.openweathermap.org/data/2.5/weather?lat=%f&lon=%f&appid=%s&units=metric", lat, lon, os.Getenv("WEATHER_API_KEY"))
 
 	WeatherSearchObject, err := http.Get(url)
@@ -94,7 +94,7 @@ func (w *WeatherServiceImpl) GetWeather(lat float64, lon float64) (response.Weat
 	result.Lat = lat
 	result.Lon = lon
 	result.Place = weather["name"].(string)
-	result.UserID = 1 //this hard coded userid will be replaced later
+	result.UserID = userId //this hard coded userid will be replaced later
 	result.CreatedAt = time.Now()
 
 	dbOpError := w.wshService.Create(result)

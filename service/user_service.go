@@ -3,6 +3,8 @@ package service
 import (
 	"weather-app-BE/data/request"
 	"weather-app-BE/data/response"
+
+	"github.com/gin-gonic/gin"
 )
 
 type UserService interface {
@@ -12,4 +14,5 @@ type UserService interface {
 	Delete(userId uint) error
 	FindById(userId uint) (response.UserResponse, error)
 	FindAll() ([]response.UserResponse, error)
+	Logout(ctx *gin.Context)
 }

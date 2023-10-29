@@ -8,6 +8,7 @@ import (
 	"weather-app-BE/model"
 	"weather-app-BE/repository"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/rs/zerolog/log"
 )
@@ -152,4 +153,11 @@ func (t *UserServiceImpl) Update(user request.UpdateUserRequest) error {
 
 	t.UsersRepository.Update(userData)
 	return nil
+}
+
+func (t *UserServiceImpl) Logout(ctx *gin.Context) {
+	for _, cookie := range ctx.Request.Cookies() {
+		ctx.SetCookie(cookie.Name, "", -1, cookie.Path, cookie.Domain, cookie.Secure, cookie.HttpOnly)
+	}
+
 }

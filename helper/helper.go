@@ -60,6 +60,11 @@ func GenerateJWTToken(userId uint) (string, error) {
 func JWTMiddleware(c *gin.Context) {
 	authHeader := c.GetHeader("Authorization")
 	tokenStr := ""
+	if authHeader == "" {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	}
+
 	if len(strings.Split(authHeader, " ")) == 2 {
 		tokenStr = strings.Split(authHeader, " ")[1]
 	}
@@ -94,4 +99,11 @@ func SendErrorResponse(err error, ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusBadRequest, errRes)
 
+}
+
+func SafeStrConv(i interface{}) string {
+	if i == nil {
+		return ""
+	}
+	return i.(string)
 }
